@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "outDir": "dist",
+    "module": "es2015",
+    "target": "es5",
+    "lib": ["es5", "es6", "es7", "es2017", "dom"],
+    "sourceMap": true,
+    "moduleResolution": "bundler",
+    "baseUrl": "src",
+    "skipLibCheck": true,
+    "strict": true,
+    "declaration": true,
+    "declarationDir": "./dist/types",
+    "jsx": "react",
+    "paths": {
+      "~/*": ["*"]
+    },
+    // Note: To transform paths for both the output .js and .d.ts files, you need both of the below entries.
+    //If there is no need for path aliases and resolve paths in the new repository .d.ts files of the final bundle:
+    //1. Delete the lines from transform and "typescript-transform-paths" below
+    //2. Remove typescript-transform-paths and ts-patch dependencies
+    //3. Delete the typescript: tcp Compiler line, in rollup.config.js
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ],
+    "types": [],
+  },
+  "include": ["src", "typeScript"],
+  "exclude": ["node_modules"]
+}
