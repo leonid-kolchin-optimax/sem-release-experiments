@@ -3,7 +3,7 @@ name: Publish package
 on:
   push:
     branches:
-      - master
+      - main
 
 env:
   NPM_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -38,7 +38,7 @@ jobs:
         uses: cycjimmy/semantic-release-action@v3
         id: semantic
         with:
-          branch: master
+          branch: main
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
