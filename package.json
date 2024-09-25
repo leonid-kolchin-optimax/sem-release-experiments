@@ -1,6 +1,6 @@
 {
   "name": "@leonid-kolchin-optimax/sem-release-experiments",
-  "version": "1.0.0",
+  "version": "1.2.2",
   "main": "index.js",
   "exports": {
     "import": "./dist/es/src/index.js",
@@ -47,6 +47,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/leonid-kolchin-optimax/sem-release-experiments"
+    "url": "https://github.com/leonid-kolchin-optimax/sem-release-experiments.git"
   }
 }
