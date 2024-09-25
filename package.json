@@ -44,5 +44,9 @@
   },
   "publishConfig": {
     "@leonid-kolchin-optimax:registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/leonid-kolchin-optimax/sem-release-experiments"
   }
 }
