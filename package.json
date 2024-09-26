@@ -1,6 +1,6 @@
 {
   "name": "@leonid-kolchin-optimax/sem-release-experiments",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "main": "index.js",
   "exports": {
     "import": "./dist/es/src/index.js",
