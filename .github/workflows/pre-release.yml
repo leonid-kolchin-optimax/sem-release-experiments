@@ -1,0 +1,103 @@
+name: Pre-release Package
+
+on:
+  pull_request:
+    types: [ labeled, synchronize ]
+
+env:
+  NPM_TOKEN: ${{ secrets.GH_TOKEN }}
+
+jobs:
+  pre-release:
+    if: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'pre-release') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to be able to publish a package
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@master
+        with:
+          node-version: 20.x
+          registry-url: https://npm.pkg.github.com/
+          scope: "@leonid-kolchin-optimax"
+
+      - name: Replace token
+        run: echo "$(sed 's/\(_authToken=\)[a-z0-9]*\($\)/\1${{ env.GITHUB_TOKEN }}\2/g' .npmrc)" > .npmrc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Install
+        run: npm i
+
+      - name: Build
+        run: npm run build
+
+#      - name: Semantic Release
+#        uses: cycjimmy/semantic-release-action@v3
+#        id: semantic
+#        with:
+#          branch: ${{ github.head_ref }}
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+#
+#      - name: Publish To GitHub Package
+#        if: steps.semantic.outputs.new_release_published == 'true'
+#        run: npm publish
+#        env:
+#          NODE_AUTH_TOKEN: ${{secrets.GH_TOKEN}}
+
+      - name: Get package version from package.json
+        id: pkg-version
+        run: echo "PACKAGE_VERSION=$(node -p -e "require('./package.json').version")" >> $GITHUB_ENV
+
+      - name: Get short branch name
+        id: branch-name
+        run: |
+          echo "BRANCH_NAME=${GITHUB_HEAD_REF#refs/heads/}" >> $GITHUB_ENV
+          # Shorten the branch name (e.g., remove special characters or limit length)
+          SHORT_BRANCH_NAME=$(echo "${{ github.head_ref }}" | tr -cd '[:alnum:]' | head -c 20)
+          echo "SHORT_BRANCH_NAME=$SHORT_BRANCH_NAME" >> $GITHUB_ENV
+          echo $BRANCH_NAME
+
+      - name: Increment pre-release version
+        id: pre-version
+        run: |
+          PACKAGE_VERSION="${{ env.PACKAGE_VERSION }}"
+          SHORT_BRANCH_NAME="${{ env.SHORT_BRANCH_NAME }}"
+
+          # Check if any pre-release versions exist for this package in the registry
+
+          DOES_PACKAGE_EXISTS=$(npm show "@leonid-kolchin-optimax/sem-release-experiments@${PACKAGE_VERSION}-${BRANCH_NAME}" version > /dev/null 2>&1 && echo "TRUE" || echo "FALSE")
+
+          if [ "$DOES_PACKAGE_EXISTS" = "FALSE" ]; then
+            NEW_PRE_RELEASE_NUMBER=0
+          else
+            NEW_PRE_RELEASE_NUMBER=$(npm view "@leonid-kolchin-optimax/sem-release-experiments"@"${PACKAGE_VERSION}-${BRANCH_NAME}" version --json | wc -l)
+          fi
+
+          NEW_PRE_RELEASE_NUMBER=$((NEW_PRE_RELEASE_NUMBER + 1))
+
+          # Format the new pre-release version: n.n.n-<branch>.m
+          NEW_VERSION="${PACKAGE_VERSION}-${SHORT_BRANCH_NAME}.${NEW_PRE_RELEASE_NUMBER}"
+
+          # Store the new version in an environment variable
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          
+      - name: Update package.json with pre-release version
+        run: |
+          NEW_VERSION="${{ env.NEW_VERSION }}"
+          jq --arg new_version "$NEW_VERSION" '.version = $new_version' package.json > package.json.tmp && mv package.json.tmp package.json
+
+      - name: Publish Pre-Release to GitHub Packages
+        run: npm publish --tag pre-release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Output Pre-Release Version
+        run: echo "Published pre-release version ${{ env.NEW_VERSION }}"
