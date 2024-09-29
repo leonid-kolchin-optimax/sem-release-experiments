@@ -60,7 +60,7 @@ jobs:
           # Check if any pre-release versions exist for this package in the registry
 
           ALL_VERSIONS=$(npm view "@leonid-kolchin-optimax/sem-release-experiments" versions)
-          MATCHING_VERSIONS=$(printf "%s\n" "${ALL_VERSIONS[@]}" | grep "${PACKAGE_VERSION}-${BRANCH_NAME}" | wc -l)
+          MATCHING_VERSIONS=$(printf "%s\n" "${ALL_VERSIONS[@]}" | grep "${PACKAGE_VERSION}-${SHORT_BRANCH_NAME}" | wc -l)
           NEW_PRE_RELEASE_NUMBER=$((MATCHING_VERSIONS + 1))
 
           # Format the new pre-release version: n.n.n-<branch>.m
