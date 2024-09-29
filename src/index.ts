@@ -1,2 +1,2 @@
 export {useOnMount} from './hooks/useOnMount';
-export {CONST_A} from './constants';
+export {CONST_A, CONST_B} from './constants';
