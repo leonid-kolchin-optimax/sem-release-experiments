@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/leonid-kolchin-optimax/sem-release-experiments/compare/v1.3.1...v1.4.0) (2024-09-30)
+
+
+### Bug Fixes
+
+* fixed config ([24bae82](https://github.com/leonid-kolchin-optimax/sem-release-experiments/commit/24bae826d9350c0c96fd144c35961617eec7b9d1))
+
+
+### Features
+
+* added a constants ([762fc9b](https://github.com/leonid-kolchin-optimax/sem-release-experiments/commit/762fc9be8c738e50ea592be35ab62cd91e2d97eb))
+
 ## [1.3.1](https://github.com/leonid-kolchin-optimax/sem-release-experiments/compare/v1.3.0...v1.3.1) (2024-09-29)
 
 
