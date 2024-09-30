@@ -1,0 +1,63 @@
+name: Delete Pre-releases
+
+on:
+  pull_request:
+    types: [ closed ]
+
+env:
+  NPM_TOKEN: ${{ secrets.GH_TOKEN }}
+
+jobs:
+  pre-release:
+    # to prevent triggering when a PR is closed
+    if: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'pre-release') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to be able to publish a package
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@master
+        with:
+          node-version: 20.x
+          registry-url: https://npm.pkg.github.com/
+          scope: "@leonid-kolchin-optimax"
+
+      - name: Get package version from package.json
+        id: pkg-version
+        run: echo "PACKAGE_VERSION=$(node -p -e "require('./package.json').version")" >> $GITHUB_ENV
+
+      - name: Get short branch name
+        id: branch-name
+        run: |
+          echo "BRANCH_NAME=${GITHUB_HEAD_REF#refs/heads/}" >> $GITHUB_ENV
+          # Shorten the branch name (e.g., remove special characters or limit length)
+          SHORT_BRANCH_NAME=$(echo "${{ github.head_ref }}" | tr -cd '[:alnum:]' | head -c 20)
+          echo "SHORT_BRANCH_NAME=$SHORT_BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Delete pre-release versions
+        id: filter-out-pre-release
+        run: |
+          PACKAGE_VERSION="${{ env.PACKAGE_VERSION }}"
+          SHORT_BRANCH_NAME="${{ env.SHORT_BRANCH_NAME }}"
+
+          PACKAGE_VERSIONS_LIST=$(curl\
+            -H "Authorization: Bearer ${{ env.NPM_TOKEN }}"\
+            -H "Accept: application/vnd.github+json"\
+            https://api.github.com/user/packages/npm/sem-release-experiments/versions)
+          VERSIONS_TO_DELETE=$(echo "$PACKAGE_VERSIONS_LIST" | jq --arg PACKAGE_VERSION $PACKAGE_VERSION --arg SHORT_BRANCH_NAME $SHORT_BRANCH_NAME '[.[] | select(.name | test($PACKAGE_VERSION) and test($SHORT_BRANCH_NAME))]')
+          IDS_TO_DELETE=$(echo $VERSIONS_TO_DELETE | jq '.[].id')
+          
+          for PACKAGE_VERSION_ID in $IDS_TO_DELETE; do
+            curl -L \
+              -X DELETE \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ env.NPM_TOKEN }}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/user/packages/npm/sem-release-experiments/versions/$PACKAGE_VERSION_ID
+          done
