@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/leonid-kolchin-optimax/sem-release-experiments/compare/v1.4.0...v1.4.1) (2024-10-02)
+
+
+### Bug Fixes
+
+* updated actions and created new ones ([28bd0df](https://github.com/leonid-kolchin-optimax/sem-release-experiments/commit/28bd0dfdf84ef05ed21abb192d5e48705903f59d))
+
 # [1.4.0](https://github.com/leonid-kolchin-optimax/sem-release-experiments/compare/v1.3.1...v1.4.0) (2024-09-30)
 
 
