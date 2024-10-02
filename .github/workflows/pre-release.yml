@@ -50,7 +50,6 @@ jobs:
           # Shorten the branch name (e.g., remove special characters or limit length)
           SHORT_BRANCH_NAME=$(echo "${{ github.head_ref }}" | tr -cd '[:alnum:]' | head -c 20)
           echo "SHORT_BRANCH_NAME=$SHORT_BRANCH_NAME" >> $GITHUB_ENV
-          echo $BRANCH_NAME
 
       - name: Increment pre-release version
         id: pre-version

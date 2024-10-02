@@ -10,7 +10,7 @@ env:
 jobs:
   pre-release:
     # to prevent triggering when a PR is closed
-    if: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'pre-release') }}
+    if: ${{ github.event.pull_request.state == 'closed' && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'pre-release') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write # to be able to publish a package
