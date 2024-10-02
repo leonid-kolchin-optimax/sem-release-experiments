@@ -4,6 +4,9 @@ on:
   release:
     types: [ created ]
 
+env:
+  NPM_TOKEN: ${{ secrets.GH_TOKEN }}
+
 jobs:
   pre_release_job:
     if: github.event.release.prerelease == true
