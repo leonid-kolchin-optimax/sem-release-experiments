@@ -1,0 +1,49 @@
+name: Pre-release Trigger
+
+on:
+  release:
+    types: [ created ]
+
+jobs:
+  pre_release_job:
+    if: github.event.release.prerelease == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to be able to publish a package
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@master
+        with:
+          node-version: 20.x
+          registry-url: https://npm.pkg.github.com/
+          scope: "@leonid-kolchin-optimax"
+
+      - name: Replace token
+        run: echo "$(sed 's/\(_authToken=\)[a-z0-9]*\($\)/\1${{ env.GITHUB_TOKEN }}\2/g' .npmrc)" > .npmrc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Install
+        run: npm i
+
+      - name: Build
+        run: npm run build
+
+      - name: Update package.json with pre-release version
+        run: |
+          NEW_VERSION="${{ github.event.release.tag_name }}"
+          jq --arg new_version "$NEW_VERSION" '.version = $new_version' package.json > package.json.tmp && mv package.json.tmp package.json
+
+      - name: Publish Pre-Release to GitHub Packages
+        run: npm publish --tag pre-release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Output Pre-Release Version
+        run: echo "Published pre-release version ${{ env.NEW_VERSION }}"
